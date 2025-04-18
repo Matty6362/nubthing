@@ -14,7 +14,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Send confirmation email via Resend
+    console.log("📨 Sending email to:", email);
+
     const emailResponse = await resend.emails.send({
       from: 'Nubthing <noreply@nubthing.com>',
       to: email,
@@ -22,8 +23,9 @@ export default async function handler(req, res) {
       html: "<p>YCAYW</p>",
     });
 
-    // Record to Supabase
-    const response = await fetch('https://fbnznbwtxqjjwixjvvme.supabase.co/rest/v1/entries', {
+    console.log("✅ Email sent:", emailResponse);
+
+    const dbResponse = await fetch('https://fbnznbwtxqjjwixjvvme.supabase.co/rest/v1/entries', {
       method: 'POST',
       headers: {
         'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZibnpuYnd0eHFqandpeGp2dm1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTMwMjk2NzIsImV4cCI6MjAyODYwNTY3Mn0.3YxwCrSxDvnmp_W9e9YOWhC3u7O9XznRzPQmhl5fDpM',
@@ -34,11 +36,16 @@ export default async function handler(req, res) {
       body: JSON.stringify({ firstName, email })
     });
 
-    if (!response.ok) throw new Error('Supabase error');
+    console.log("✅ Supabase response:", dbResponse.status);
+
+    if (!dbResponse.ok) {
+      const errorText = await dbResponse.text();
+      throw new Error(`Supabase error: ${errorText}`);
+    }
 
     return res.status(200).json({ message: "Success", firstName, email });
   } catch (err) {
-    console.error('Server error:', err);
+    console.error('❌ Server error:', err);
     return res.status(500).json({ message: "Server error", error: err.message });
   }
 }
