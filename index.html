@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Nubthing</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eaeaea;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 60px;
+    }
+    h1 {
+      color: royalblue;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    input[type="text"], input[type="email"] {
+      padding: 10px;
+      font-size: 1em;
+    }
+    button {
+      padding: 10px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    .version {
+      margin-top: 20px;
+      color: #333;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Nubthing</h1>
+  <p>Enter the contest!</p>
+  <form id="entryForm">
+    <input type="text" id="firstName" name="firstName" placeholder="First Name" required />
+    <input type="email" id="email" name="email" placeholder="Email" required />
+    <button type="submit">Submit</button>
+  </form>
+  <div class="version">v1.8.1</div>
+  <script>
+    document.getElementById('entryForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      const firstName = document.getElementById('firstName').value;
+      const email = document.getElementById('email').value;
+      try {
+        const response = await fetch('/api/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, email })
+        });
+        const result = await response.json();
+        if (response.ok) {
+          alert("A confirmation email has been sent to " + email);
+        } else {
+          alert("There was an error: " + result.message);
+        }
+      } catch (error) {
+        alert("There was an error. Please try again.");
+      }
+    });
+  </script>
+</body>
+</html>
