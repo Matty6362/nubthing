@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nubthing</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f0f0f0;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: royalblue;
+    }
+    form {
+      display: inline-block;
+      margin-top: 2rem;
+    }
+    input {
+      display: block;
+      margin: 1rem auto;
+      padding: 0.5rem;
+      width: 250px;
+    }
+    button {
+      padding: 0.5rem 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Nubthing</h1>
+  <form id="entryForm">
+    <input type="text" name="firstName" placeholder="First name" required />
+    <input type="email" name="email" placeholder="Email address" required />
+    <button type="submit">Submit</button>
+  </form>
+  <div id="confirmation" style="display:none; margin-top: 2rem;"></div>
+
+  <script>
+    const form = document.getElementById('entryForm');
+    const confirmation = document.getElementById('confirmation');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        firstName: formData.get('firstName'),
+        email: formData.get('email')
+      };
+
+      try {
+        const response = await fetch('/api/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          form.style.display = 'none';
+          confirmation.style.display = 'block';
+          confirmation.innerHTML = `A confirmation email has been sent to <strong>${data.email}</strong>.`;
+        } else {
+          confirmation.innerHTML = `Error: ${result.message}`;
+        }
+      } catch (err) {
+        confirmation.innerHTML = "Something went wrong.";
+      }
+    });
+  </script>
+</body>
+</html>
