@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Nubthing</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #eee;
+        text-align: center;
+        margin-top: 100px;
+      }
+      h1 {
+        color: royalblue;
+      }
+      input {
+        padding: 10px;
+        margin: 5px;
+        font-size: 16px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: white;
+        border: 1px solid black;
+        cursor: pointer;
+      }
+      #version {
+        margin-top: 20px;
+        font-size: 12px;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Nubthing</h1>
+    <h2>Enter the contest!</h2>
+    <form id="entryForm">
+      <div>
+        <input type="text" name="firstName" placeholder="First name" required />
+      </div>
+      <div>
+        <input type="email" name="email" placeholder="Email" required />
+      </div>
+      <button type="submit">Submit</button>
+    </form>
+    <div id="version">v1.8.3</div>
+    <script>
+      const form = document.getElementById("entryForm");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const firstName = formData.get("firstName");
+        const email = formData.get("email");
+
+        const res = await fetch("/api/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ firstName, email }),
+        });
+
+        const result = await res.json();
+        if (res.ok) {
+          alert(`A confirmation email has been sent to ${email}`);
+        } else {
+          alert(`There was an error: ${result.error || "Please try again."}`);
+        }
+      });
+    </script>
+  </body>
+</html>
