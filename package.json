@@ -1,7 +1,0 @@
-
-{
-  "type": "module",
-  "dependencies": {
-    "resend": "^0.10.0"
-  }
-}
