@@ -1,14 +1,6 @@
-{
-  "name": "nubthing",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "api/send.js",
-  "scripts": {
-    "dev": "vercel dev",
-    "start": "vercel dev"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.0.0",
-    "resend": "^0.5.6"
-  }
-}
+ "dependencies": {
+-  "@supabase/supabase-js": "^2.0.0",
+-  "resend": "^0.5.6"
++  "@supabase/supabase-js": "^2.0.0",
++  "resend": "^4.4.0"
+ }
