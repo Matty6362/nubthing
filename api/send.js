@@ -1,45 +1,44 @@
 import { Resend } from 'resend';
+import { createClient } from '@supabase/supabase-js';
 
-const resend = new Resend('re_GEhPQAha_LX5WA2sqiMYX99pigZk9Aq8B');
+const resend = new Resend(process.env.RESEND_API_KEY);
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { firstName, email } = req.body;
 
   if (!firstName || !email) {
-    return res.status(400).json({ message: 'Missing fields' });
+    return res.status(400).json({ error: 'Missing firstName or email' });
   }
 
   try {
-    const emailResponse = await resend.emails.send({
-      from: 'Nubthing <noreply@nubthing.com>',
-      to: email,
-      subject: "You're in!",
-      html: '<p>YCAYW</p>',
-    });
+    // Store in Supabase
+    const { error: dbError } = await supabase
+      .from('submissions')
+      .insert([{ first_name: firstName, email }]);
 
-    const dbResponse = await fetch('https://fbnznbwtxqjjwixjvvme.supabase.co/rest/v1/entries', {
-      method: 'POST',
-      headers: {
-        apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-        Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal'
-      },
-      body: JSON.stringify({ firstName, email })
-    });
-
-    if (!dbResponse.ok) {
-      const text = await dbResponse.text();
-      throw new Error(`Supabase error: ${text}`);
+    if (dbError) {
+      throw dbError;
     }
 
-    res.status(200).json({ message: 'Success', firstName, email });
+    // Send confirmation email
+    await resend.emails.send({
+      from: 'Nubthing <hello@nubthing.com>',
+      to: email,
+      subject: "You're in!",
+      html: `<p>YCAYW</p>`,
+    });
+
+    return res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Server error:', err);
-    res.status(500).json({ message: 'Server error', error: err.message });
+    console.error('API Error:', err.message);
+    return res.status(500).json({ error: err.message || 'Server error' });
   }
 }
