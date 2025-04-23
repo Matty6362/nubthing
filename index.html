@@ -5,33 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Enter the contest!</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #eee; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-    #container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
-    h1 { color: royalblue; }
-    input, button { width: 100%; padding: 0.75rem; margin-top: 0.5rem; font-size: 1rem; }
-    button { background: royalblue; color: white; border: none; cursor: pointer; }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    h1 {
+      color: royalblue;
+      margin-bottom: 1rem;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    button {
+      background: royalblue;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    #confirmation p {
+      font-size: 1rem;
+      color: #333;
+      line-height: 1.4;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
   <div id="container">
+    <!-- Step 1: The form -->
     <h1>Enter the contest!</h1>
     <form id="entryForm">
       <input type="text" id="firstName" placeholder="First name" required />
       <input type="email" id="email" placeholder="Email address" required />
       <button type="submit" id="submitBtn">Submit</button>
     </form>
-    <p id="confirmation" style="display:none;"></p>
+
+    <!-- Step 2: Confirmation message (hidden by default) -->
+    <div id="confirmation" style="display:none;">
+      <h1>Confirmation</h1>
+      <p>
+        A confirmation email has been sent to<br>
+        <strong id="userEmail"></strong><br>
+        using the address you entered.
+      </p>
+    </div>
   </div>
 
   <script>
     const form = document.getElementById('entryForm');
     const btn = document.getElementById('submitBtn');
     const confirmation = document.getElementById('confirmation');
+    const userEmailEl = document.getElementById('userEmail');
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
       btn.disabled = true;
+
       const firstName = document.getElementById('firstName').value;
       const email = document.getElementById('email').value;
 
@@ -42,9 +93,10 @@
       });
 
       if (res.ok) {
-        confirmation.textContent = `Thanks! We’ll see you at ${email}.`;
-        confirmation.style.display = 'block';
+        // hide form, show confirmation
         form.style.display = 'none';
+        userEmailEl.textContent = email;
+        confirmation.style.display = 'block';
       } else {
         alert('Oops—something went wrong. Please try again.');
         btn.disabled = false;
