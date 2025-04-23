@@ -2,15 +2,14 @@ import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY
 );
 
-export async function POST(request) {
+export async function POST(req) {
   try {
-    const { firstName, email } = await request.json();
+    const { firstName, email } = await req.json();
 
     // Save to Supabase
     const { error: dbError } = await supabase
@@ -30,7 +29,7 @@ export async function POST(request) {
       from: "Nubthing <hello@nubthing.com>",
       to: email,
       subject: "You're in!",
-      html: `<p>YCAYW</p>`,
+      html: "<p>YCAYW</p>",
     });
 
     if (emailError) {
@@ -41,16 +40,13 @@ export async function POST(request) {
       });
     }
 
-    return new Response(
-      JSON.stringify({ success: true, message: "Email sent!" }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
     console.error("Unexpected error:", err);
-    return new Response(JSON.stringify({ error: "A server error occurred" }), {
+    return new Response(JSON.stringify({ error: "Server error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
