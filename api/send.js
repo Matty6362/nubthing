@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   // 1. Save to Supabase with detailed error logging
   try {
     const { data, error } = await supabase
-      .from('entries')
+      .from('nubthing_entries')      // <— corrected table name
       .insert([{ first_name: firstName, email }]);
 
     if (error) {
