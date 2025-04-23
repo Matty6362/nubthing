@@ -1,70 +1,55 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Nubthing</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #eee;
-        text-align: center;
-        margin-top: 100px;
-      }
-      h1 {
-        color: royalblue;
-      }
-      input {
-        padding: 10px;
-        margin: 5px;
-        font-size: 16px;
-      }
-      button {
-        padding: 10px 20px;
-        font-size: 16px;
-        background-color: white;
-        border: 1px solid black;
-        cursor: pointer;
-      }
-      #version {
-        margin-top: 20px;
-        font-size: 12px;
-        color: #555;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Nubthing</h1>
-    <h2>Enter the contest!</h2>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Enter the contest!</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #eee; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+    #container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
+    h1 { color: royalblue; }
+    input, button { width: 100%; padding: 0.75rem; margin-top: 0.5rem; font-size: 1rem; }
+    button { background: royalblue; color: white; border: none; cursor: pointer; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>Enter the contest!</h1>
     <form id="entryForm">
-      <div>
-        <input type="text" name="firstName" placeholder="First name" required />
-      </div>
-      <div>
-        <input type="email" name="email" placeholder="Email" required />
-      </div>
-      <button type="submit">Submit</button>
+      <input type="text" id="firstName" placeholder="First name" required />
+      <input type="email" id="email" placeholder="Email address" required />
+      <button type="submit" id="submitBtn">Submit</button>
     </form>
-    <div id="version">v1.8.3</div>
-    <script>
-      const form = document.getElementById("entryForm");
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const firstName = formData.get("firstName");
-        const email = formData.get("email");
+    <p id="confirmation" style="display:none;"></p>
+  </div>
 
-        const res = await fetch("/api/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ firstName, email }),
-        });
+  <script>
+    const form = document.getElementById('entryForm');
+    const btn = document.getElementById('submitBtn');
+    const confirmation = document.getElementById('confirmation');
 
-        const result = await res.json();
-        if (res.ok) {
-          alert(`A confirmation email has been sent to ${email}`);
-        } else {
-          alert(`There was an error: ${result.error || "Please try again."}`);
-        }
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      btn.disabled = true;
+      const firstName = document.getElementById('firstName').value;
+      const email = document.getElementById('email').value;
+
+      const res = await fetch('/api/send', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ firstName, email })
       });
-    </script>
-  </body>
+
+      if (res.ok) {
+        confirmation.textContent = `Thanks! We’ll see you at ${email}.`;
+        confirmation.style.display = 'block';
+        form.style.display = 'none';
+      } else {
+        alert('Oops—something went wrong. Please try again.');
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
 </html>
