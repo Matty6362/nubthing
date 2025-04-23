@@ -1,4 +1,9 @@
 {
   "name": "nubthing",
-  "version": "1.8.3"
+  "version": "1.8.3",
+  "type": "module",
+  "dependencies": {
+    "resend": "^0.5.6",
+    "@supabase/supabase-js": "^2.39.5"
+  }
 }
