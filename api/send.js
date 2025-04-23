@@ -19,7 +19,7 @@ export default async (req, res) => {
       return res.status(400).json({ error: 'Missing name or email' });
     }
 
-    // 1. Save to Supabase
+    // Save to Supabase
     const { error: dbError } = await supabase
       .from('entries')
       .insert([{ firstName, email }]);
@@ -28,7 +28,7 @@ export default async (req, res) => {
       return res.status(500).json({ error: `Database error: ${dbError.message}` });
     }
 
-    // 2. Send Email
+    // Send email via Resend
     const { error: emailError } = await resend.emails.send({
       from: 'you@nubthing.com',
       to: email,
