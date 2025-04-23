@@ -1,44 +1,58 @@
-import { Resend } from 'resend';
-import { createClient } from '@supabase/supabase-js';
+import { Resend } from "resend";
+import { createClient } from "@supabase/supabase-js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY
 );
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const { firstName, email } = req.body;
-
-  if (!firstName || !email) {
-    return res.status(400).json({ error: 'Missing firstName or email' });
-  }
-
+export async function POST(request) {
   try {
-    // Store in Supabase
+    const { firstName, email } = await request.json();
+
+    // Save to Supabase
     const { error: dbError } = await supabase
-      .from('submissions')
-      .insert([{ first_name: firstName, email }]);
+      .from("entries")
+      .insert([{ firstName, email }]);
 
     if (dbError) {
-      throw dbError;
+      console.error("Database error:", dbError);
+      return new Response(JSON.stringify({ error: "Database error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Send confirmation email
-    await resend.emails.send({
-      from: 'Nubthing <hello@nubthing.com>',
+    const { error: emailError } = await resend.emails.send({
+      from: "Nubthing <hello@nubthing.com>",
       to: email,
       subject: "You're in!",
       html: `<p>YCAYW</p>`,
     });
 
-    return res.status(200).json({ success: true });
+    if (emailError) {
+      console.error("Email error:", emailError);
+      return new Response(JSON.stringify({ error: "Email send error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(
+      JSON.stringify({ success: true, message: "Email sent!" }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   } catch (err) {
-    console.error('API Error:', err.message);
-    return res.status(500).json({ error: err.message || 'Server error' });
+    console.error("Unexpected error:", err);
+    return new Response(JSON.stringify({ error: "A server error occurred" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
