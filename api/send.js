@@ -7,42 +7,34 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 );
 
-export default async (req, res) => {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const { firstName, email } = req.body;
+
+  // 1. Insert into Supabase
+  const { error: dbError } = await supabase
+    .from('entries')
+    .insert([{ first_name: firstName, email }]);
+
+  if (dbError) {
+    console.error('Supabase error:', dbError);
+    return res.status(500).json({ error: 'Database insert failed' });
+  }
+
+  // 2. Send confirmation email
   try {
-    const { firstName, email } = req.body;
-
-    if (!firstName || !email) {
-      return res.status(400).json({ error: 'Missing name or email' });
-    }
-
-    // Save to Supabase
-    const { error: dbError } = await supabase
-      .from('entries')
-      .insert([{ firstName, email }]);
-
-    if (dbError) {
-      return res.status(500).json({ error: `Database error: ${dbError.message}` });
-    }
-
-    // Send email via Resend
-    const { error: emailError } = await resend.emails.send({
-      from: 'you@nubthing.com',
+    await resend.emails.send({
+      from: 'no-reply@nubthing.com',
       to: email,
       subject: "You're in!",
-      html: '<p>YCAYW</p>'
+      html: `<p>Thanks for entering, ${firstName}! Your code is <strong>YCAYW</strong>.</p>`
     });
-
-    if (emailError) {
-      return res.status(500).json({ error: `Email error: ${emailError.message}` });
-    }
-
-    return res.status(200).json({ message: 'Success' });
-
-  } catch (err) {
-    return res.status(500).json({ error: err.message || 'Unexpected server error' });
+  } catch (emailError) {
+    console.error('Resend email error:', emailError);
   }
-};
+
+  return res.status(200).json({ success: true });
+}
