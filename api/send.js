@@ -3,7 +3,7 @@
 import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
 
-// ⚠️ Inline API keys for testing. Replace the anon key below with your full Supabase anon key.
+// Inline API keys for testing. Replace/remove these after you verify everything works.
 const resend = new Resend('re_GEhPQAha_LX5WA2sqiMYX99pigZk9Aq8B');
 const supabase = createClient(
   'https://qpfadowpwilkcobcombf.supabase.co',
@@ -17,14 +17,20 @@ export default async function handler(req, res) {
 
   const { firstName, email } = req.body;
 
-  // 1. Save to Supabase
-  const { error: dbError } = await supabase
-    .from('entries')
-    .insert([{ first_name: firstName, email }]);
+  // 1. Save to Supabase with detailed error logging
+  try {
+    const { data, error } = await supabase
+      .from('entries')
+      .insert([{ first_name: firstName, email }]);
 
-  if (dbError) {
-    console.error('Supabase error:', dbError);
-    return res.status(500).json({ error: 'Database insert failed' });
+    if (error) {
+      console.error('❌ Supabase insert error:', JSON.stringify(error, null, 2));
+      return res.status(500).json({ error: error.message });
+    }
+    console.log('✅ Supabase insert succeeded:', data);
+  } catch (err) {
+    console.error('🔥 Unexpected Supabase error:', err);
+    return res.status(500).json({ error: 'Unexpected error' });
   }
 
   // 2. Send confirmation email
@@ -35,9 +41,9 @@ export default async function handler(req, res) {
       subject: "You're in!",
       html: `<p>Thanks for entering, ${firstName}! Your code is <strong>YCAYW</strong>.</p>`
     });
+    console.log('✅ Confirmation email sent');
   } catch (emailError) {
-    console.error('Resend email error:', emailError);
-    // We'll still return success so the user isn't blocked by email issues
+    console.error('❌ Resend email error:', emailError);
   }
 
   return res.status(200).json({ success: true });
